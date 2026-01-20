@@ -1,5 +1,5 @@
 # ***QiratHussain-SQL Data Cleaning and Analysis Project: World_layoffs***
-======================================================================================
+=======================================================================
 ## About the Project
 This project focuses on transforming the raw data into clean, analysis-ready format and exploring key trends.
 ## DataSet
@@ -41,4 +41,3 @@ Here are some insights
 ![company](images/company.PNG)
 ![country](images/country.PNG)
 ![yealytrends](images/yearlytrends.PNG)
-![date](images/images/date.PNG) 
