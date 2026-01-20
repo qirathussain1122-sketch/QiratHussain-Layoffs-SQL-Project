@@ -1,0 +1,72 @@
+-- =================================================================================================
+--DATA CLEANING
+-- =================================================================================================
+
+
+-- creating new data base from csv file
+CREATE DATABASE layoffs_project;
+CREATE TABLE layoffs_project (company varchar (50) , location varchar(50), industry varchar(50), total_laid_off int, percentage decimal(10,2), `date` varchar( 50) , stage varchar(50), country varchar (50) , funds_raised_millions INT );
+-- inspecting the data 
+SELECT* FROM layoffs_project;
+DESCRIBE layoffs_project;
+
+-- ===================================================================================================
+-- identified and removed duplicates
+-- ===================================================================================================
+
+SELECT count(*) , company, location, industry, total_laid_off, percentage, `date`, stage, country, funds_raised_millions FROM layoffs_project
+GROUP BY company, location, industry, total_laid_off, percentage, `date`, stage, country, funds_raised_millions HAVING count(*) >1 ;
+CREATE TABLE my_layoffs_project SELECT* FROM layoffs_project GROUP BY  company, location, industry, total_laid_off, percentage, `date`, stage, country, funds_raised_millions;
+SELECT* FROM my_layoffs_project;
+
+-- ====================================================================================================
+-- standardized the data
+-- ====================================================================================================
+
+SELECT company, trim(company), location, trim(location), industry, trim(industry), country, trim(country)
+FROM my_layoffs_project;
+UPDATE my_layoffs_project SET company= trim(company), location= trim(location), industry = trim(industry), country= trim(country);
+UPDATE my_layoffs_project SET `date` = STR_TO_DATE(date, '%m/%d/%Y') ;
+ALTER TABLE my_layoffs_project MODIFY `date` DATE;
+SELECT* FROM my_layoffs_project;
+
+-- =====================================================================================================
+-- null values
+-- =====================================================================================================
+
+-- let's fix null values 
+SELECT* FROM my_layoffs_project WHERE total_laid_off is null AND percentage is null; 
+DELETE FROM my_layoffs_project WHERE total_laid_off is null AND percentage is null;
+
+
+-- let's fill empty industry
+SELECT * FROM my_layoffs_project pro1 JOIN my_layoffs_project pro2 ON pro1.company= pro2.company 
+WHERE (pro1.industry is null or pro1.industry = " ") AND pro2.industry is NOT null;
+UPDATE my_layoffs_project  pro1 JOIN my_layoffs_project pro2 ON pro1.company= pro2.company 
+SET pro1.industry= pro2.industry 
+WHERE (pro1.industry is null or pro1.industry = " ") AND pro2.industry is NOT null;
+
+-- let's confirm if data is cleaned
+SELECT* FROM my_layoffs_project ORDER BY percentage DESC;
+SELECT company, location, industry, total_laid_off, percentage, `date`,stage, country, funds_raised_millions FROM my_layoffs_project GROUP BY company ORDER BY company ;
+
+-- ======================================================================================================
+-- cleaned data is ready for analysis
+-- ======================================================================================================
+
+-- |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+-- ======================================================================================================
+-- exploratory data analysis
+-- ======================================================================================================
+
+SELECT MAX(date), MIN(date) FROM my_layoffs_project;
+SELECT count(*) FROM my_layoffs_project WHERE date is null;
+
+-- let's check top countries
+SELECT country , SUM(total_laid_off) FROM my_layoffs_project GROUP BY country;
+
+-- let's check top companies
+SELECT company , SUM(total_laid_off) FROM my_layoffs_project GROUP BY company;
+
+-- let's check YEAR-wise trendsSELECT YEAR(date) , SUM(total_laid_off) FROM my_layoffs_project GROUP BY YEAR(date) ORDER BY SUM(total_laid_off);
